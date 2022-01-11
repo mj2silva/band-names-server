@@ -1,0 +1,9 @@
+# Packages folder
+node_modules/
+
+# Editor configurations
+.idea/
+.vscode/
+
+# Enviroments files
+*.env
