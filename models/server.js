@@ -2,7 +2,9 @@
 const express = require('express');
 const { createServer } = require('http')
 const { Server: IOServer} = require('socket.io');
+const cors = require('cors');
 const path = require('path');
+
 const Sockets = require('./sockets');
 
 const defaultConfig = {
@@ -13,11 +15,12 @@ class Server {
     constructor({ port } = defaultConfig) {
         this.app = express();
         this.port = port;
-        this.httpServer = createServer(this.app);
     }
 
     start({ demo } = { demo: false }) {
+        this.injectMiddleWares();
         if (demo) this.useDemoClient();
+        this.httpServer = createServer(this.app);
         this.initSockets();
         this.httpServer.listen(this.port, () => {
             console.log('Server running on port ' + this.port);
@@ -25,7 +28,7 @@ class Server {
     }
 
     initSockets() {
-        this.io = new IOServer(this.httpServer);
+        this.io = new IOServer(this.httpServer, { cors: { origin: true } });
         const sockets = new Sockets(this.io);
         sockets.startEvents();
     }
@@ -33,6 +36,10 @@ class Server {
     useDemoClient() {
         // Deploy client directory
         this.app.use(express.static(path.resolve(__dirname, '../client')));
+    }
+
+    injectMiddleWares() {
+        this.app.use(cors());
     }
 }
 
